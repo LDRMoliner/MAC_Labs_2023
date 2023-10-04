@@ -2,25 +2,15 @@ from fourcolor import graph_is_4colorable
 
 
 def graph_is_3colorable(graph):
-    nodes_to_add = len(graph) * 3
     original_length = len(graph)
-    i = 0
-    while i < original_length:
-        graph[i] += [0] * nodes_to_add
-        graph[i][original_length + i * 3: original_length + i * 3 + 3] = [1, 1, 1]
-        graph += [[0] * (original_length + nodes_to_add) for _ in range(3)]
-        graph[original_length + 3*i][original_length + i * 3: original_length + i * 3 + 3] = [0, 1, 0]
-        graph[original_length + 3*i][i] = 1
-        graph[original_length + 3*i + 1][original_length + i * 3: original_length + i * 3 + 3] = [1, 0, 1]
-        graph[original_length + 3*i + 1][i] = 1
-        graph[original_length + 3*i + 2][original_length + i * 3: original_length + i * 3 + 3] = [0, 1, 0]
-        graph[original_length + 3*i + 2][i] = 1
-        print(i)
-        print(graph)
-        i += 1
+
     for i in graph:
-        print(i)
+        i += [1, 1, 1]
+    rows_to_add = [0] * (original_length + 3)
+    rows_to_add[0:original_length] = [1] * original_length
+    graph += [rows_to_add] * 3
     return graph_is_4colorable(graph)
+
 
 def test():
     g0 = [[0, 1, 1, 1],
