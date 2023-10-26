@@ -18,7 +18,4 @@ def solve_vc(adjacency_matrix):
             if is_vertex_cover(adjacency_matrix, nodes):
                 if smallest_vertex_cover is None or len(nodes) < len(smallest_vertex_cover):
                     smallest_vertex_cover = nodes
-
     return [1 if i in smallest_vertex_cover else 0 for i in range(num_nodes)]
-
-

@@ -16,18 +16,9 @@ def DFS(graph, v, end, visitados, path):
         if graph[v][vecino] == 1 and not visitados[vecino]:
             visitados[vecino] = True
             path = DFS(graph=graph, v = vecino, end = end, visitados = visitados, path = path + [vecino])
-            if path != [path[0]]:
+            if (path[len(path) - 1] == end):
                 return path
-    return [path[0]]
-
-
-
-
-
-
-
-
-   
+    return path[0:len(path) - 1]
    
 def test():
     
@@ -46,15 +37,15 @@ def test():
     
     assert find_path(g2, 0, 1) in [[0,1]]    
     assert find_path(g2, 0, 2) == []
-    
-    g3 = [[0, 0, 1, 0, 0, 0],
+
+    g3 = [[0, 0, 0, 0, 1, 0],
           [0, 0, 0, 1, 0, 0],
-          [1, 0, 0, 1, 1, 0],
-          [0, 1, 1, 0, 0, 1],
+          [0, 0, 0, 1, 0, 0],
+          [0, 0, 0, 0, 1, 0],
           [0, 0, 1, 0, 0, 1],
-          [0, 0, 0, 1, 1, 0]]
+          [1, 0, 0, 0, 1, 0]]
     
-    assert find_path(g3, 1, 0) in [[1, 3, 2, 0], [1, 3, 5, 4, 2, 0]]
+    assert find_path(g3, 1, 0) in [[1, 3, 4, 5, 0], [1, 3, 5, 4, 2, 0]]
     
     g4 = [[0, 1, 1, 0, 0, 0],
           [1, 0, 0, 1, 1, 0],

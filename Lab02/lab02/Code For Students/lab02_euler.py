@@ -15,7 +15,6 @@ def graph_has_Eulerian_circuit(g):
     for elem in g:
         if (not tiene_1s_pares(elem)):
             return False
-
     return True
     
     

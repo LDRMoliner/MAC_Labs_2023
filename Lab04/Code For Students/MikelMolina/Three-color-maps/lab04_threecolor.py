@@ -1,6 +1,6 @@
 from fourcolor import graph_is_4colorable
 
-
+#Por cada grafo
 def graph_is_3colorable(graph):
     original_length = len(graph)
 
