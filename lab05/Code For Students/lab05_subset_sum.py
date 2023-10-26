@@ -3,23 +3,44 @@ import itertools
 
 
 # la funcion has_sum, dada una coleccion de positivos y un valor "value", decide si
-# existe una subcoleccion de positivos que sumen "value" o no.    
+# existe una subcoleccion de positivos que sumen "value" o no.
+# Ha tardao una media de: 0.00063872002 segundos.
 def has_sum(value, collection):
     # TODO
     if value == 0:
         return True
     if not collection:
         return False
-    if collection[len(collection) - 1] > value:
-        return has_sum(value, collection[:len(collection) - 1])
-    return has_sum(value, collection[:len(collection) - 1]) or has_sum(value - collection[len(collection) - 1], collection = collection[:len(collection) - 1])
+    if collection[0] > value:
+        return has_sum(value, collection[1:])
+    return has_sum(value, collection[1:]) or has_sum(value - collection[0], collection[1:])
 
 
 # la funcion subset, dada una coleccion de positivos y un valor "value", si existe
 # una subcoleccion de positivos que sumen "value" devuelve dicha subcoleccion.
-# En otro caso devuelve la lista [None].    
+# En otro caso devuelve la lista [None].
+#Tarda aproximadamente 0.0013198853 segundos, con el subset de 17 valores tarda 14.329482 segundos
 def subset(value, collection):
-    return False
+    def subset_worker(value, collection):
+        if value == 0:
+            return []
+        if not collection and value != 0:
+            return None
+        if collection[0] > value:
+            return subset_worker(value, collection[1:])
+        sin_primer_valor = subset_worker(value, collection[1:])
+        if sin_primer_valor is None:
+            con_primer_valor = subset_worker(value - collection[0], collection[1:])
+            if con_primer_valor is None:
+                return None
+            else:
+                return con_primer_valor + [collection[0]]
+        else:
+            return sin_primer_valor
+    subset_list = subset_worker(value, collection)
+    if subset_list is None:
+        return [None]
+    return subset_list
 
 
 def test():
@@ -82,24 +103,23 @@ def test():
     assert has_sum(value5, collection5)
     assert has_sum(value6, collection6)
 
-# #  DESCOMENTAR PARA PROBAR SUBSET
-# ##############################################################
-#     assert subset(value0, collection0) == [None]
-#     assert subset(value1, collection1) in perm11 + perm12
-#     assert subset(value2, collection2) in perm21
-#     assert  subset(value3, collection3) in perm31 + perm32 + perm33
-#     assert subset(value4, collection4) in perm41
-#     assert subset(value5, collection5) in perm51
-#     assert subset(value6, collection6) in perm61
+    # #  DESCOMENTAR PARA PROBAR SUBSET
+    # ##############################################################
+    assert subset(value0, collection0) == [None]
+    assert subset(value1, collection1) in perm11 + perm12
+    assert subset(value2, collection2) in perm21
+    assert subset(value3, collection3) in perm31 + perm32 + perm33
+    assert subset(value4, collection4) in perm41
+    assert subset(value5, collection5) in perm51
+    assert subset(value6, collection6) in perm61
 
+    # # PARA MEDIR TIEMPO USA ESTA COLECCION QUE NO TIENE SUBSECCIONES
+    # # QUE SUMEN VALUE6
+    # ##################################################################
 
-# # PARA MEDIR TIEMPO USA ESTA COLECCION QUE NO TIENE SUBSECCIONES
-# # QUE SUMEN VALUE6
-# ##################################################################
-
-#     collection6 = list(range(1,27))
-#     value6 = 409
-#     assert subset(value6, collection6) == [None]
+    collection6 = list(range(1, 27))
+    value6 = 409
+    #assert subset(value6, collection6) == [None]
 
 
 start_time = time()
