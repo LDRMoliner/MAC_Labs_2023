@@ -5,6 +5,36 @@ from math import inf
 # algoritmo voraz de Dijkstra
 def Dijkstra (graph, initial):
     #TODO
+    sol = [0] * (len(graph))
+    visitados = [False] * (len(graph))
+    unvisited_nodes = True
+    minimum = inf
+    for v in range(len(graph)):
+        sol[v] = graph[initial][v]
+        visitados[v] = False
+    sol[initial] = 0
+    visitados[initial] = True
+
+    while unvisited_nodes:
+        index = -1
+        minimum = inf
+        for visited in range(len(visitados)):
+            if not visitados[visited] and sol[visited] < minimum:
+                minimum = sol[visited]
+                index = visited
+        visitados[index] = True
+
+        unvisited_nodes = False
+        for n in range(len(graph)):
+            if sol[n] > sol[index] + graph[index][n]:
+                sol[n] = sol[index] + graph[index][n]
+            if not visitados[n]:
+                unvisited_nodes = True
+    return sol
+
+
+
+
 
 
 def test():
