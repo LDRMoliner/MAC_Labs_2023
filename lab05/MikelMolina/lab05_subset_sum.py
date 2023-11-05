@@ -4,7 +4,7 @@ import itertools
 
 # la funcion has_sum, dada una coleccion de positivos y un valor "value", decide si
 # existe una subcoleccion de positivos que sumen "value" o no.
-# Ha tardao una media de: 0.00063872002 segundos.
+# Ha tardado una media de: 0.00063872002 segundos.
 def has_sum(value, collection):
     # TODO
     if value == 0:
