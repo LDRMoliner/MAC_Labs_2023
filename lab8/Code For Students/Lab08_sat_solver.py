@@ -1,21 +1,20 @@
 from time import time
 from sat_generator import generate_formula
 from tools import list_minisat2list_our_sat
+from pysat.solvers import Solver
 
+
+# from pysat.solvers import Solver
 def remove_trivial_clauses(clauses):
     return [clause for clause in clauses if not any(lit in clause and -lit in clause for lit in clause)]
 
 
 def remove_false(clause, assignment):
-    if not clause:
-        return []
-    first_literal = clause[0]
-    if assignment[abs(first_literal)] is not None:
-        if (first_literal < 0 and assignment[abs(first_literal)] == 1) or (
-                first_literal > 0 and assignment[abs(first_literal)] == 0):
-            return remove_false(clause[1:], assignment)
-    return [first_literal] + remove_false(clause[1:], assignment)
-
+    new_clause = []
+    for lit in clause:
+        if assignment[abs(lit)] is None or (lit > 0 and assignment[abs(lit)] == 1) or (lit < 0 and assignment[abs(lit)] == 0):
+            new_clause.append(lit)
+    return new_clause
 
 def remove_false_literals(clauses, assignment):
     for i in range(len(clauses)):
@@ -23,58 +22,40 @@ def remove_false_literals(clauses, assignment):
 
 
 def remove_true_clauses(clauses, assignment):
-    if not clauses:
-        return []
-    first_clause = clauses[0]
-    for lit in first_clause:
-        if assignment[abs(lit)] is None:
-            continue
-        if (lit < 0 and not assignment[abs(lit)]) or (lit > 0 and assignment[abs(lit)]):
-            return remove_true_clauses(clauses[1:], assignment)
-    return [first_clause] + remove_true_clauses(clauses[1:], assignment)
+    clauses_new = []
+    for clause in clauses:
+        if not eval_clause(clause, assignment):
+            clauses_new.append(clause)
+    return clauses_new
 
 
 def set_only_one_variable(num_variables, clauses, assignment):
-    numbers = [[0, False] for _ in range(num_variables + 1)]
-    i = 0
-    appearances = 0
-    for clause in clauses:
-        while i < num_variables:
-            appearances = 0
-            i += 1
-            appearances += clause.count(i)
-            if appearances > 0:
-                numbers[i][1] = True
-                numbers[i][0] += appearances
+    literal_appearances = [set() for _ in range(num_variables + 1)]
 
-                continue
-            appearances += clause.count(-i)
-            if appearances > 0:
-                numbers[i][1] = False
-                numbers[i][0] += appearances
-        i = 0
-    while i < num_variables:
-        i += 1
-        if numbers[i][0] == 1:
-            assignment[i] = 1 if numbers[i][1] else 0
+    for clause in clauses:
+        for literal in clause:
+            variable = abs(literal)
+            literal_appearances[variable].add(variable if literal > 0 else -variable)
+
+    for variable, appearances in enumerate(literal_appearances[1:], start=1):
+        if len(appearances) == 1:
+            assignment[variable] = 1 if appearances.pop() > 0 else 0
 
 
 def assign_lonely_variables(clauses, assignment):
     for clause in clauses:
         if len(clause) == 1:
-            if clause[0] < 0:
-                assignment[abs(clause[0])] = 0
-            else:
-                assignment[abs(clause[0])] = 1
+            assignment[abs(clause[0])] = 0 if clause[0] < 0 else 1
 
 
 def sat_preprocessing(num_variables, clauses, assignment):
     # Rule 0
+    clauses = remove_trivial_clauses(clauses)
     update = True
     while update:
         # TODO
         # usa funciones auxiliares
-        clauses_old = clauses
+        clauses_old = list(clauses)
         assign_lonely_variables(clauses, assignment)
         set_only_one_variable(num_variables, clauses, assignment)
         clauses = remove_true_clauses(clauses, assignment)
@@ -90,14 +71,16 @@ def sat_preprocessing(num_variables, clauses, assignment):
 def solve_SAT(num_variables, clauses):
     asig = [None] * (num_variables + 1)
     # Rule 0
-    clauses = remove_trivial_clauses(clauses)
     clauses, asig = sat_preprocessing(num_variables, clauses, asig)
     if clauses == [[1], [-1]]:
         return "UNSATISFIABLE"
-    return solve_SAT_rec(clauses, asig)
+    return solve_SAT_rec(num_variables, clauses, asig)
 
 
-def solve_SAT_rec(clauses, asig):
+def solve3_SAT_rec(num_variables, clauses, asig):
+    clauses, asig = sat_preprocessing(num_variables, clauses, asig)
+    if clauses == ([[1], [-1]]):
+        return "UNSATISFIABLE"
     _, satisfied = eval_3CNF(asig, clauses)
 
     # Si la asignación es verdadera, la devolvemos.
@@ -114,12 +97,11 @@ def solve_SAT_rec(clauses, asig):
     if pair_found:
         index2_to_change = asig.index(None, index_to_change)
     else:
-        copy2_asig = list(asig)
-        copy2_asig[index_to_change] = 0
-        if eval_3CNF(clauses, copy2_asig) != "UNSATISFIABLE":
+        asig[index_to_change] = 0
+        if eval_3CNF(clauses, asig) != "UNSATISFIABLE":
             return asig
-        copy2_asig[index_to_change] = 1
-        if eval_3CNF(clauses, copy2_asig) != "UNSATISFIABLE":
+        asig[index_to_change] = 1
+        if eval_3CNF(clauses, asig) != "UNSATISFIABLE":
             return asig
         return "UNSATISFIABLE"
 
@@ -128,29 +110,35 @@ def solve_SAT_rec(clauses, asig):
     copy_asig = list(asig)
     asig[index_to_change] = 0
     asig[index2_to_change] = 1
-    asig1 = solve_SAT_rec(clauses, asig)
+    asig1 = solve3_SAT_rec(num_variables, clauses, asig)
+
+    if asig1 != "UNSATISFIABLE":
+        return asig1
 
     asig = list(copy_asig)
     asig[index_to_change] = 1
     asig[index2_to_change] = 0
-    asig2 = solve_SAT_rec(clauses, asig)
+    asig2 = solve3_SAT_rec(num_variables, clauses, asig)
+
+    if asig2 != "UNSATISFIABLE":
+        return asig2
 
     asig = list(copy_asig)
     asig[index_to_change] = 1
     asig[index2_to_change] = 1
-    asig3 = solve_SAT_rec(clauses, asig)
+    asig3 = solve3_SAT_rec(num_variables, clauses, asig)
 
-    if asig1 != "UNSATISFIABLE":
-        return asig1
-    if asig2 != "UNSATISFIABLE":
-        return asig2
     if asig3 != "UNSATISFIABLE":
         return asig3
+
     return "UNSATISFIABLE"
 
-def solve_SAT_rec(clauses, asig):
-    _, satisfied = eval_3CNF(asig, clauses)
 
+def solve_SAT_rec(num_variables, clauses, asig):
+    clauses, asig = sat_preprocessing(num_variables, clauses, asig)
+    _, satisfied = eval_3CNF(asig, clauses)
+    if clauses == ([[1], [-1]]):
+        return "UNSATISFIABLE"
     # Si la asignación es verdadera, la devolvemos.
     if satisfied:
         return asig
@@ -160,54 +148,29 @@ def solve_SAT_rec(clauses, asig):
         return "UNSATISFIABLE"
 
     index_to_change = asig.index(None, 1)
-    pair_found = None in asig[index_to_change:]
 
-    if pair_found:
-        index2_to_change = asig.index(None, index_to_change)
-    else:
-        copy2_asig = list(asig)
-        copy2_asig[index_to_change] = 0
-        if eval_3CNF(clauses, copy2_asig) != "UNSATISFIABLE":
-            return asig
-        copy2_asig[index_to_change] = 1
-        if eval_3CNF(clauses, copy2_asig) != "UNSATISFIABLE":
-            return asig
-        return "UNSATISFIABLE"
-
-    # Abrimos tres ramas.
+    # Abrimos dos ramas.
 
     copy_asig = list(asig)
     asig[index_to_change] = 0
-    asig[index2_to_change] = 1
-    asig1 = solve_SAT_rec(clauses, asig)
-
-    asig = list(copy_asig)
-    asig[index_to_change] = 1
-    asig[index2_to_change] = 0
-    asig2 = solve_SAT_rec(clauses, asig)
-
-    asig = list(copy_asig)
-    asig[index_to_change] = 1
-    asig[index2_to_change] = 1
-    asig3 = solve_SAT_rec(clauses, asig)
+    asig1 = solve_SAT_rec(num_variables, clauses, list(asig))
 
     if asig1 != "UNSATISFIABLE":
         return asig1
+
+    asig = list(copy_asig)
+    asig[index_to_change] = 1
+    asig2 = solve_SAT_rec(num_variables, clauses, list(asig))
+
     if asig2 != "UNSATISFIABLE":
         return asig2
-    if asig3 != "UNSATISFIABLE":
-        return asig3
+
     return "UNSATISFIABLE"
+
 
 def eval_clause(clause, assignment):
-    for i in range(len(clause)):
-        if not clause[i]:
-            continue
-        if clause[i] < 0 and assignment[abs(clause[i])] == 0:
-            return True
-        if clause[i] > 0 and assignment[abs(clause[i])] == 1:
-            return True
-    return False
+    return any(assignment[abs(lit)] is not None and (
+                (lit < 0 and not assignment[abs(lit)]) or (lit > 0 and assignment[abs(lit)])) for lit in clause)
 
 
 def eval_3CNF(assignment, clauses):
@@ -277,6 +240,7 @@ def test1():
                [-15, -6, -3], [-2, 3, -13], [12, 3, -2], [2, -2, -3, 17], [20, -15, -16],
                [-5, -17, -19], [-20, -18, 11], [-9, 1, -5], [-19, 9, 17], [17], [1],
                [4, -16, -5]]
+
     assert solve_SAT(20, clauses) == "UNSATISFIABLE"
 
     print("Cuarta clausula")
@@ -347,7 +311,7 @@ def test2():
     tupla = list_minisat2list_our_sat('instancias/8-unsat.cnf')
     assert (solve_SAT(tupla[0], tupla[1])) == "UNSATISFIABLE"
 
-    print("Novena CNF de ins")
+    print("Novena CNF de instancias.")
     tupla = list_minisat2list_our_sat('instancias/9-unsat.cnf')
     assert (solve_SAT(tupla[0], tupla[1])) == "UNSATISFIABLE"
 
@@ -556,7 +520,8 @@ def test4():
     print("\n" + "El tiempo empleado por Pysat es: ")
     print(elapsed_time_pysat)
 
+
 test1()
-#test2()
-# test3()
-# test4()
+test2()
+test3()
+test4()
