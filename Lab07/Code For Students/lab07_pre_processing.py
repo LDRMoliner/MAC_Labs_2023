@@ -1,15 +1,10 @@
 from sat_generator import generate_formula
-from pysat.solvers import Solver
+#from pysat.solvers import Solver
+from collections import Counter
+
 
 def remove_trivial_clauses(clauses):
-    if not clauses:
-        return []
-    else:
-        first_clause = clauses[0]
-        if any(lit in first_clause and -lit in first_clause for lit in first_clause):
-            return remove_trivial_clauses(clauses[1:])
-        else:
-            return [first_clause] + remove_trivial_clauses(clauses[1:])
+    return [clause for clause in clauses if not any(lit in clause and -lit in clause for lit in clause)]
 
 
 def remove_false(clause, assignment):
@@ -41,37 +36,18 @@ def remove_true_clauses(clauses, assignment):
 
 
 def set_only_one_variable(num_variables, clauses, assignment):
-    numbers = [[0, False] for _ in range(num_variables + 1)]
-    i = 0
-    appearances = 0
-    for clause in clauses:
-        while i < num_variables:
-            appearances = 0
-            i += 1
-            appearances += clause.count(i)
-            if appearances > 0:
-                numbers[i][1] = True
-                numbers[i][0] += appearances
+    uni_capa = [lit for sublist in clauses for lit in sublist]
 
-                continue
-            appearances += clause.count(-i)
-            if appearances > 0:
-                numbers[i][1] = False
-                numbers[i][0] += appearances
-        i = 0
-    while i < num_variables:
-        i += 1
-        if numbers[i][0] == 1:
-            assignment[i] = 1 if numbers[i][1] else 0
-
+    for num in range(1, num_variables + 1):
+        if uni_capa.count(num) == 0 and uni_capa.count(-num) > 0:
+            assignment[abs(num)] = 0
+        elif uni_capa.count(num) > 0 and uni_capa.count(-num) == 0:
+            assignment[abs(num)] = 1
 
 def assign_lonely_variables(clauses, assignment):
     for clause in clauses:
         if len(clause) == 1:
-            if clause[0] < 0:
-                assignment[abs(clause[0])] = 0
-            else:
-                assignment[abs(clause[0])] = 1
+            assignment[abs(clause[0])] = 0 if clause[0] < 0 else 1
 
 
 def sat_preprocessing(num_variables, clauses, assignment):
@@ -84,6 +60,7 @@ def sat_preprocessing(num_variables, clauses, assignment):
         clauses_old = clauses
         assign_lonely_variables(clauses, assignment)
         set_only_one_variable(num_variables, clauses, assignment)
+        only_one_type_set(num_variables, clauses, assignment)
         clauses = remove_true_clauses(clauses, assignment)
         remove_false_literals(clauses, assignment)
         update = not (clauses_old == clauses)
@@ -209,7 +186,6 @@ def test2():
         print("Esta CNF es insatisfactible")
     print("Usando tu pre_processing se obtiene:")
     print(sat_preprocessing(10, formula4, [None] * 11))
-
 
 
 test1()

@@ -1,6 +1,13 @@
 from time import time
-from lab06_vertex_cover_2 import partial_validity_check
 
+
+def partial_validity_check(cover, graph):
+    # TODO: Programa el codigo de la funcion
+    for i in range(len(graph)):
+        for j in range(len(graph)):
+            if graph[i][j] == 1 and cover[i] == 0 and cover[j] == 0:
+                return False
+    return True
 
 ## vertex_cover_tree inicializa y llama al arbol de busqueda
 def vertex_cover_tree(graph):
