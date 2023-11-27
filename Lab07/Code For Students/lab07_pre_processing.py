@@ -1,5 +1,5 @@
 from sat_generator import generate_formula
-#from pysat.solvers import Solver
+from pysat.solvers import Solver
 from collections import Counter
 
 
