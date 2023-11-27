@@ -6,7 +6,6 @@ import itertools
 # existe una subcoleccion de positivos que sumen "value" o no.
 # Ha tardao una media de: 0.00063872002 segundos.
 def has_sum(value, collection):
-    # TODO
     if value == 0:
         return True
     if not collection:
@@ -66,7 +65,7 @@ def get_collection(assig, collection):
 # la funcion subset, dada una coleccion de positivos y un valor "value", si existe
 # una subcoleccion de positivos que sumen "value" devuelve dicha subcoleccion.
 # En otro caso devuelve la lista [None].
-# Tarda aproximadamente 0.0013198853 segundos, con el subset de 17 valores tarda 14.329482 segundos
+# Tarda aproximadamente 0.0013198853 segundos, con el subset de 17 valores tarda 0.0001568794.
 def subset(value, collection):
     collection, found = subset_preproc(value, collection)
     assig = [None] * len(collection)
@@ -133,6 +132,7 @@ def test():
     value6 = 7
     perm61 = [[3, 4], [4, 3]]
 
+
     assert not has_sum(value0, collection0)
     assert has_sum(value1, collection1)
     assert has_sum(value2, collection2)
@@ -140,6 +140,7 @@ def test():
     assert has_sum(value4, collection4)
     assert has_sum(value5, collection5)
     assert has_sum(value6, collection6)
+
 
     # #  DESCOMENTAR PARA PROBAR SUBSET
     # ##############################################################

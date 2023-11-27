@@ -4,7 +4,6 @@ from math import inf
 
 # algoritmo voraz de Dijkstra
 def Dijkstra (graph, initial):
-    #TODO
     sol = [0] * (len(graph))
     visitados = [False] * (len(graph))
     unvisited_nodes = True
