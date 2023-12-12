@@ -23,7 +23,6 @@ def visualizeGXGraph(graph, cnf):
     #para visualizar
     G = fromAdjacencyToGX(graph)
     
-    
     if assignment == None:
         print("NOT SATISFIABLE -> CANNOT GRAPHICALLY REPRESENT GRAPH")
     else:

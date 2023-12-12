@@ -19,27 +19,32 @@ def reduce_3colorable_to_SAT(graph):
     i = 0
     num_nodes = len(graph)
 
+
     # Añadimos tantas variables con colores como nodos hay.
     for node in range(num_nodes):
         cnf.append([var2positive(node, color) for color in range(3)])
 
     # Un solo nodo no puede tener más de un solo color.
 
+
     for node in range(num_nodes):
         cnf.append([-var2positive(node, 0), -var2positive(node, 1)])
         cnf.append([-var2positive(node, 0), -var2positive(node, 2)])
         cnf.append([-var2positive(node, 1), -var2positive(node, 2)])
 
-    for i in range(len(graph[i])):
-        for j in range(i, len(graph[i])):
-            if i == j:
-                continue
-            cnf.extend([-var2positive(i, color), -var2positive(j, color)] for color in range(3))
+    # Dos nodos adyacentes no deben compartir mismo color
+
+    
+    for i in range(num_nodes):
+        for j in range(i + 1, num_nodes):
+            if graph[i][j] == 1:
+                cnf.extend([-var2positive(i, color), -var2positive(j, color)] for color in range(3))
 
     print(cnf)
-
+    return cnf
 
 def test():
+    print("####################GRAFO 1##########################################")
     g1 = [[0, 1, 1, 0],
           [1, 0, 1, 1],
           [1, 1, 0, 0],
@@ -56,10 +61,12 @@ def test():
           [1, 1, 1, 0]]
     # SATISFIABLE
 
+    print("####################GRAFO 2##########################################")
     print(g2)
     cnf = reduce_3colorable_to_SAT(g2)
     visualizeGXGraph(g2, cnf)
 
+    print("####################GRAFO 3##########################################")
     g3 = [[0, 1, 1, 1],
           [1, 0, 1, 1],
           [1, 1, 0, 1],
@@ -70,6 +77,7 @@ def test():
     cnf = reduce_3colorable_to_SAT(g3)
     visualizeGXGraph(g3, cnf)
 
+    print("####################GRAFO 4##########################################")
     g4 = [[0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0],
           [1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
           [1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -91,6 +99,7 @@ def test():
     cnf = reduce_3colorable_to_SAT(g4)
     visualizeGXGraph(g4, cnf)
 
+    print("####################GRAFO 5##########################################")
     g5 = [[0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
           [1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
           [1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
@@ -121,6 +130,7 @@ def test():
     cnf = reduce_3colorable_to_SAT(g5)
     visualizeGXGraph(g5, cnf)
 
+    print("####################GRAFO 6##########################################")
     g6 = [[0, 1, 1, 0],
           [1, 0, 0, 1],
           [1, 0, 0, 1],
@@ -131,6 +141,7 @@ def test():
     cnf = reduce_3colorable_to_SAT(g6)
     visualizeGXGraph(g6, cnf)
 
+    print("####################GRAFO 7##########################################")
     g7 = [
         [0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -162,6 +173,7 @@ def test():
     g8 = nx.adjacency_matrix(G).todense().tolist()
     # SATISFIABLE
 
+    print("####################GRAFO 8##########################################")
     print(g8)
     cnf = reduce_3colorable_to_SAT(g8)
     visualizeGXGraph(g8, cnf)
@@ -169,21 +181,11 @@ def test():
     G = nx.complete_graph(200)
     g9 = nx.adjacency_matrix(G).todense().tolist()
     # UNSATISFIABLE
-
+    print("####################GRAFO 9##########################################")
     print(g9)
     cnf = reduce_3colorable_to_SAT(g9)
     visualizeGXGraph(g9, cnf)
 
 
 test()
-
-g1 = [[0, 1, 1, 0],
-          [1, 0, 1, 1],
-          [1, 1, 0, 0],
-          [0, 1, 0, 0]]
-# SATISFIABLE
-
-print(g1)
-cnf = reduce_3colorable_to_SAT(g1)
-visualizeGXGraph(g1, cnf)
 
