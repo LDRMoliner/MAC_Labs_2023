@@ -96,33 +96,24 @@ def solve_SAT_rec(num_variables, clauses, asig):
     if clauses == ([[1], [-1]]):
         return "UNSATISFIABLE"
     # Si la asignación es verdadera, la devolvemos.
-    satisfied = eval_3CNF(asig, clauses)
-    if satisfied:
+    elif clauses == []:
         return asig
+    else:
 
-    # Si ya no quedan None, insatisfactible.
-    if None not in asig[1:]:
-        return "UNSATISFIABLE"
+        index_to_change = asig.index(None, 1)
 
-    index_to_change = asig.index(None, 1)
+        # Abrimos dos ramas.
 
-    # Abrimos dos ramas.
+        copy_asig = list(asig)
+        asig[index_to_change] = 0
+        asig1 = solve_SAT_rec(num_variables, clauses, asig)
 
-    copy_asig = list(asig)
-    asig[index_to_change] = 0
-    asig1 = solve_SAT_rec(num_variables, clauses, asig)
+        if asig1 != "UNSATISFIABLE":
+            return asig1
 
-    if asig1 != "UNSATISFIABLE":
-        return asig1
-
-    asig = list(copy_asig)
-    asig[index_to_change] = 1
-    asig2 = solve_SAT_rec(num_variables, clauses, asig)
-
-    if asig2 != "UNSATISFIABLE":
-        return asig2
-
-    return "UNSATISFIABLE"
+        asig = list(copy_asig)
+        asig[index_to_change] = 1
+        return solve_SAT_rec(num_variables, clauses, asig)
 
 
 # Abriendo tres ramas de búsqueda va más lento todavía, ¿por qué? Quién sabe.
@@ -527,7 +518,7 @@ def test4():
     print(elapsed_time_pysat)
 
 
-test1()
-test2()
-test3()
-test4()
+#test1()
+#test2()
+#test3()
+#test4()

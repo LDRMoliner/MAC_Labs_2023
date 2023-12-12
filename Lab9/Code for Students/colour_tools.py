@@ -1,17 +1,22 @@
 from pysat.solvers import Mergesat3
 import matplotlib.pyplot as plt
 import networkx as nx
+import my_SAT_solver as sat_solver
 
 def positive2var(n):
     node = (n-1)//3
     color = (n-1)%3
     return (node, color)
-    
+
+def convert_my_assignment(assignment):
+    return [-i if assignment[i] == 0 else i for i in range(1, len(assignment) - 1)]
 
 #Graph Visualization
 def visualizeGXGraph(graph, cnf):
-    
+
+    """""
     # crea el solver
+
     solver = Mergesat3(bootstrap_with=cnf)
    
     # llama al solver
@@ -19,16 +24,27 @@ def visualizeGXGraph(graph, cnf):
    
     # obtiene una asignación
     assignment = solver.get_model()
+    print(assignment)
+    """""
+
+    num_variables = len(graph) * 3
+    assignment = sat_solver.solve_SAT(num_variables, cnf)
+    print(assignment)
 
     #para visualizar
     G = fromAdjacencyToGX(graph)
     
-    if assignment == None:
+    if assignment == "UNSATISFIABLE":
         print("NOT SATISFIABLE -> CANNOT GRAPHICALLY REPRESENT GRAPH")
     else:
         print("DISPLAYING GRAPH FOR: ")
+        assignment = convert_my_assignment(assignment)
+        print(assignment)
         color_map = [0]*(len(graph))
-        for value in list(assignment):
+        for value in list(assignment)[1:]:
+            if value is None:
+                color_map[positive2var(2)[0]] = positive2var(2)[1]
+                continue
             if value > 0:
                 color_map[positive2var(value)[0]] = positive2var(value)[1]
      

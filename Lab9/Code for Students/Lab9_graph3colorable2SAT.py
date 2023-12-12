@@ -1,6 +1,6 @@
 from colour_tools import visualizeGXGraph
 import networkx as nx
-
+from random import choice
 
 def var2positive(node, color):
     return 3 * node + color + 1
@@ -40,7 +40,6 @@ def reduce_3colorable_to_SAT(graph):
             if graph[i][j] == 1:
                 cnf.extend([-var2positive(i, color), -var2positive(j, color)] for color in range(3))
 
-    print(cnf)
     return cnf
 
 def test():
