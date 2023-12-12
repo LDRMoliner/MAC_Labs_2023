@@ -57,3 +57,4 @@ def fromAdjacencyToGX(graph):
     for edge in GX_nodes:
         G.add_edge(edge[0], edge[1])
     return G
+
